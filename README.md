@@ -1,137 +1,96 @@
 # Projeto E-commerce — Modelagem de Banco de Dados
+# Projeto de Banco de Dados E-commerce
 
-## Descrição do Projeto
+## 1. Sobre o projeto
 
-Este projeto foi desenvolvido como parte da Formação SQL Database Specialist da DIO.
+Este projeto foi desenvolvido como parte de um desafio de modelagem de banco de dados SQL da Digital Innovation One (DIO).
 
-O objetivo é realizar a modelagem de um banco de dados para um cenário de e-commerce, utilizando o modelo Entidade-Relacionamento Estendido (EER), e posteriormente implementar o esquema em banco de dados.
+O objetivo é representar a estrutura de um sistema de comércio eletrónico (e-commerce), contemplando clientes, produtos, fornecedores, vendedores terceiros, pedidos, pagamentos, entregas e controlo de estoque.
 
-O projeto parte do modelo apresentado pela expert e realiza os refinamentos solicitados no desafio.
+O projeto inclui a criação do esquema relacional, definição de chaves primárias e estrangeiras, aplicação de restrições de integridade, inserção de dados para testes e elaboração de consultas SQL para responder a questões de negócio.
 
----
-
-## Objetivo do Desafio
-
-Refinar o modelo apresentado acrescentando os seguintes requisitos:
-
-- Cliente PJ e PF — uma conta pode ser PJ ou PF, mas não pode possuir as duas informações;
-- Pagamento — um pedido pode possuir mais de uma forma de pagamento;
-- Entrega — possui status e código de rastreio.
-
----
-
-## Modelo Conceitual
-
-O modelo contempla as principais entidades relacionadas ao funcionamento do e-commerce:
-
-- Cliente
-- Cliente PF
-- Cliente PJ
-- Pedido
-- Produto
-- Fornecedor
-- Estoque
-- Pagamento
-- Entrega
-- Item do Pedido
-- Produto_has_Fornecedor
-- Produto_has_Estoque
-
----
-
-## Principais Relacionamentos
-
-### Cliente e Pedido
-
-Um cliente pode realizar vários pedidos.
-
-**Cliente 1:N Pedido**
-
-### Cliente PF e Cliente PJ
-
-O cliente pode ser especializado em Pessoa Física ou Pessoa Jurídica.
-
-**Cliente 1:1 Cliente_PF**
-
-**Cliente 1:1 Cliente_PJ**
-
-A regra do desafio determina que uma conta deve ser PF ou PJ, não podendo possuir as duas informações.
-
-### Pedido e Pagamento
-
-Um pedido pode possuir mais de uma forma de pagamento.
-
-**Pedido 1:N Pagamento**
-
-### Pedido e Entrega
-
-A entidade Entrega foi acrescentada ao modelo para armazenar:
-
-- Status da entrega
-- Código de rastreio
-
-A cardinalidade entre Pedido e Entrega será definida conforme a regra de negócio adotada no projeto.
-
-### Pedido e Produto
-
-Um pedido pode possuir vários produtos e um produto pode participar de vários pedidos.
-
-Essa relação N:N é implementada através da entidade associativa `Item_Pedido`.
-
-### Produto e Fornecedor
-
-Um produto pode ser disponibilizado por diferentes fornecedores e um fornecedor pode disponibilizar diferentes produtos.
-
-Essa relação N:N é implementada através da entidade associativa `Produto_has_Fornecedor`.
-
-### Produto e Estoque
-
-Um produto pode estar associado a diferentes estoques e um estoque pode possuir diferentes produtos.
-
-Essa relação N:N é implementada através da entidade associativa `Produto_has_Estoque`, que também armazena a quantidade disponível.
-
----
-
-## Modelo EER
-
-![Modelo EER do projeto](modelo_eer_ecommerce.png)
-
----
-
-## Tecnologias e Ferramentas
+## 2. Tecnologias utilizadas
 
 - MySQL
 - MySQL Workbench
-- Modelo EER
 - SQL
-- Git
-- GitHub
+- Git e GitHub
 
----
+## 3. Modelo lógico da base de dados
 
-## Estrutura do Projeto
+A base de dados chama-se `ecommerce_db` e contém 14 tabelas:
 
-```text
-ecommerce-database-model/
-│
-├── README.md
-└── modelo_eer_ecommerce.png
+| Tabela | Finalidade |
+|---|---|
+| `cliente` | Regista os clientes e o respetivo tipo: pessoa física (PF) ou pessoa jurídica (PJ). |
+| `cliente_pf` | Armazena os dados específicos dos clientes pessoa física. |
+| `cliente_pj` | Armazena os dados específicos dos clientes pessoa jurídica. |
+| `produto` | Regista os produtos comercializados. |
+| `fornecedor` | Armazena os fornecedores. |
+| `estoque` | Regista os locais de armazenamento. |
+| `terceiro_vendedor` | Armazena os vendedores terceiros do marketplace. |
+| `pedido` | Regista os pedidos dos clientes, o estado e o valor do frete. |
+| `item_pedido` | Relaciona os produtos com os pedidos, incluindo quantidade e preço unitário. |
+| `pagamento` | Regista os pagamentos associados aos pedidos. |
+| `entrega` | Armazena o estado da entrega, o código de rastreio e as datas relevantes. |
+| `produtos_por_vendedor` | Relaciona produtos com vendedores terceiros e regista as quantidades. |
+| `produto_has_fornecedor` | Relaciona produtos com fornecedores. |
+| `produto_has_estoque` | Relaciona produtos com locais de estoque e respetivas quantidades. |
 
+## 4. Relacionamentos principais
 
-### ⚠️ Um detalhe importante
+- **Cliente — Pedido:** um cliente pode realizar vários pedidos.
+- **Pedido — Item do pedido:** um pedido pode conter vários itens.
+- **Produto — Item do pedido:** um produto pode aparecer em diferentes pedidos.
+- **Pedido — Pagamento:** um pedido pode ter vários registos de pagamento, permitindo representar diferentes formas de pagamento.
+- **Pedido — Entrega:** cada pedido pode ter, no máximo, um registo de entrega, através da restrição de unicidade em `idPedido`.
+- **Produto — Fornecedor:** relacionamento muitos-para-muitos implementado através de `produto_has_fornecedor`.
+- **Produto — Estoque:** relacionamento muitos-para-muitos implementado através de `produto_has_estoque`.
+- **Produto — Vendedor terceiro:** relacionamento muitos-para-muitos implementado através de `produtos_por_vendedor`.
+- **Cliente — Pessoa física/Pessoa jurídica:** os dados específicos são separados nas tabelas `cliente_pf` e `cliente_pj`.
 
-Eu **não coloquei uma cardinalidade 1:1 definitiva em `Pedido → Entrega`**, porque, como verificamos no material que você enviou, o requisito informa os atributos da entrega, mas **não especifica essa cardinalidade**.
+## 5. Regras de negócio
 
-Isso é melhor do que colocar no README uma afirmação que o material não sustenta.
+1. Um cliente é identificado como pessoa física (PF) ou pessoa jurídica (PJ).
+2. Os dados específicos de PF e PJ são armazenados em tabelas distintas.
+3. Um pedido pertence a um cliente.
+4. Um pedido pode conter vários produtos.
+5. Um pedido pode ter vários registos de pagamento.
+6. A entrega possui um estado e pode ter um código de rastreio.
+7. A quantidade de produtos por vendedor terceiro pode ser zero.
+8. As chaves estrangeiras asseguram a integridade referencial entre as tabelas relacionadas.
 
----
+**Nota:** a exclusividade entre PF e PJ é uma regra de negócio pretendida. A estrutura atual das chaves primárias e estrangeiras, isoladamente, não impede todos os cenários de um mesmo cliente aparecer nas duas tabelas de especialização. Esta regra deverá ser reforçada com mecanismos adicionais, se for exigida a sua aplicação diretamente na base de dados.
 
-### Agora faça somente isto
+## 6. Consultas SQL e questões de negócio
 
-Cole o conteúdo acima no `README.md` e pressione:
+O projeto utiliza consultas SQL para responder a questões como:
 
-**Ctrl + S**
+- Quantos pedidos cada cliente realizou?
+- Qual é o valor total dos pedidos de cada cliente, incluindo o frete?
+- Quais são os produtos vendidos e as respetivas quantidades?
+- Qual é o valor total dos pedidos por estado?
+- Quais são as formas de pagamento utilizadas?
+- Quais são os produtos, fornecedores e locais de estoque relacionados?
+- Existe algum vendedor terceiro com a mesma razão social de um fornecedor?
+- Existem pedidos sem itens ou registos relacionados em falta?
+- Qual é o preço médio, mínimo e máximo dos produtos?
 
-Depois me diga **"salvei"**.
+As consultas utilizam recursos como `SELECT`, `WHERE`, expressões calculadas, `ORDER BY`, `GROUP BY`, `HAVING` e `JOIN`.
 
-Aí vamos fazer a próxima etapa: verificar o README no VS Code antes de enviá-lo ao GitHub.
+## 7. Dados de teste
+
+Foram inseridos dados de teste para demonstrar os relacionamentos e permitir a execução das consultas de análise.
+
+Os dados abrangem clientes PF e PJ, produtos, fornecedores, vendedores terceiros, pedidos, itens, pagamentos, entregas e estoque.
+
+## 8. Como executar
+
+1. Instalar o MySQL Server e o MySQL Workbench.
+2. Abrir o ficheiro SQL do projeto no MySQL Workbench.
+3. Executar o script por etapas, respeitando a ordem de criação das tabelas e inserção dos dados.
+4. Executar as consultas analíticas no final do script.
+
+## 9. Objetivo de aprendizagem
+
+Este projeto consolida conhecimentos de modelagem relacional, normalização, chaves primárias e estrangeiras, restrições de integridade, relacionamentos muitos-para-muitos, manipulação de dados e consultas SQL para análise de negócio.
